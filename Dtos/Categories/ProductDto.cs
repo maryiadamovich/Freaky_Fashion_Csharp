@@ -15,5 +15,8 @@
         public string? SKU { get; set; }
 
         public int Price { get; set; }
+
+        public IReadOnlyList<CategoryDto> Categories { get; set; } = new List<CategoryDto>();
+   
     }
 }

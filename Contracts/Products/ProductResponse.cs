@@ -8,5 +8,5 @@ public record ProductResponse(
     string? Label,
     string? SKU,
     int Price,
-    string? Kategori
+    int? Kategori
 );
