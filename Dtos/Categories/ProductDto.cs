@@ -16,7 +16,7 @@
 
         public int Price { get; set; }
 
-        public IReadOnlyList<CategoryDto> Categories { get; set; } = new List<CategoryDto>();
+        public int? Kategori { get; set; }
    
     }
 }

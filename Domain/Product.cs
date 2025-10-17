@@ -18,6 +18,6 @@
 
         public int? Kategori { get; set; }
 
-        public ICollection<Category> Categories { get; set; } = new List<Category>();
+        public Category Category { get; set; }
     }
 }
