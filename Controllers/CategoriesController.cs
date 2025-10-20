@@ -78,4 +78,37 @@ public class CategoriesController : ControllerBase
 
         return categoryDto;
     }
+
+    // GET  /api/categories/search?slug=kläder
+    [HttpGet("search")]
+    public ActionResult<CategoryDto> GetCategoryBySlug(string slug)
+    {
+        var category = dbContext.Categories.Include(c => c.Products).FirstOrDefault(c => c.Slug == slug);
+
+        if (category == null)
+        {
+            return Ok(new List<ProductDto>());  // empty array (no products)
+        }
+
+        var categoryDto = new CategoryDto
+        {
+            Id = category.Id,
+            Name = category.Name,
+            Image = category.Image,
+            Slug = category.Slug,
+            Products = category.Products.Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                Photo = p.Photo,
+                Label = p.Label,
+                SKU = p.SKU,
+                Kategori = p.Kategori,
+                Price = p.Price
+            }).ToList()
+        };
+
+        return categoryDto;
+    }
 }
