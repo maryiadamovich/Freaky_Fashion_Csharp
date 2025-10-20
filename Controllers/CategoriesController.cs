@@ -1,4 +1,5 @@
 ﻿using Freaky_Fashion_Api.Data;
+using Freaky_Fashion_Api.Domain;
 using Freaky_Fashion_Api.Dtos.Categories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -110,5 +111,61 @@ public class CategoriesController : ControllerBase
         };
 
         return categoryDto;
+    }
+
+    [HttpPost]
+    public ActionResult<CategoryDto> AddCategory([FromBody] CategoryDto createCategoryDto)
+    {
+        if (createCategoryDto == null || string.IsNullOrEmpty(createCategoryDto.Name))
+        {
+            return BadRequest("Category data is invalid.");
+        }
+
+        var slug = generateSlug(createCategoryDto.Name); // generate the slug
+
+        var image = $"https://placehold.co/300x400/grey/white?text={Uri.EscapeDataString(createCategoryDto.Name)}";  //  generate the img
+
+        var category = new Category
+        {
+            Name = createCategoryDto.Name,
+            Slug = slug,
+            Image = image,
+            Products = new List<Product>()  
+        };
+
+        dbContext.Categories.Add(category);
+
+        dbContext.SaveChanges();
+
+        var categoryDto = new CategoryDto  //  create response
+        {
+            Id = category.Id,
+            Name = category.Name,
+            Slug = category.Slug,
+            Image = category.Image,
+            Products = category.Products.Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                Photo = p.Photo,
+                Label = p.Label,
+                SKU = p.SKU,
+                Kategori = p.Kategori,
+                Price = p.Price
+            }).ToList()
+        };
+
+        return CreatedAtAction(nameof(GetCategoryById), new { id = category.Id }, categoryDto);
+    }
+
+    private string generateSlug(string name)
+    {
+        var slug = name.ToLower()
+                       .Replace(" ", "-")
+                       .Where(c => char.IsLetterOrDigit(c) || c == '-')
+                       .Aggregate("", (current, c) => current + c);
+
+        return slug;
     }
 }
