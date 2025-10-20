@@ -1,4 +1,6 @@
-﻿namespace Freaky_Fashion_Api.Domain
+﻿using System.Text.Json.Serialization;
+
+namespace Freaky_Fashion_Api.Domain
 {
     public class Product
     {
@@ -18,6 +20,7 @@
 
         public int? Kategori { get; set; }
 
+        [JsonIgnore]
         public Category Category { get; set; }
     }
 }

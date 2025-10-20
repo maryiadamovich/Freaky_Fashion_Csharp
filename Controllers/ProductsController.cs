@@ -63,7 +63,7 @@ public class ProductsController : ControllerBase
     {
         var products = dbContext.Products;
         var product = products.FirstOrDefault(x => x.Id == id);
-        
+
         if (product == null)
         {
             return NotFound();
@@ -72,7 +72,7 @@ public class ProductsController : ControllerBase
         return product;
     }
 
-    //GET  /api/products/search?name={name}   //gets a list of products with the same name
+    //GET  /api/products/search?name={name}   //get a list of products with the same name
     [HttpGet("search")]
     public ActionResult<List<Product>> GetProductByName([FromQuery] string name)
     {
@@ -81,7 +81,7 @@ public class ProductsController : ControllerBase
 
         if (productsByName.Count == 0)
         {
-            return NotFound();
+            return new List<Product>();
         }
 
         return productsByName;
@@ -91,6 +91,21 @@ public class ProductsController : ControllerBase
     [HttpPost]
     public ActionResult<ProductResponse> Create([FromBody] CreateProductResponse dto)
     {
+        if (dto == null)
+        {
+            return BadRequest("Invalid input: request body cannot be null.");
+        }
+
+        if (string.IsNullOrEmpty(dto.Name))  //required fild
+        {
+            return BadRequest("Product name is required.");
+        }
+
+        if (dto.Price <= 0)  //required fild
+        {
+            return BadRequest("Price must be greater than zero.");
+        }
+
         var product = new Product
         {
             Name = dto.Name,
@@ -102,12 +117,18 @@ public class ProductsController : ControllerBase
             Kategori = dto.Kategori,
         };
 
-        dbContext.Products.Add(product);
-
-        dbContext.SaveChanges();
+        try
+        {
+            dbContext.Products.Add(product);
+            dbContext.SaveChanges();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred while saving the product: {ex.Message}");
+        }
 
         var response = new ProductResponse(product.Id, product.Name, product.Description, product.Photo, product.Label, product.SKU, product.Price, product.Kategori);
-        
+
         // 201 Created
         return Created("", response);
     }
@@ -119,7 +140,7 @@ public class ProductsController : ControllerBase
     {
         var product = dbContext.Products.Find(id);
 
-        if (product == null) 
+        if (product == null)
         {
             //Returnera 404 Not Found
             return NotFound();
