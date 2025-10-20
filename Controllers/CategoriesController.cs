@@ -1,5 +1,4 @@
 ﻿using Freaky_Fashion_Api.Data;
-using Freaky_Fashion_Api.Domain;
 using Freaky_Fashion_Api.Dtos.Categories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -51,7 +50,7 @@ public class CategoriesController : ControllerBase
     [HttpGet("{id}")]
     public ActionResult<CategoryDto> GetCategoryById(int id)
     {
-        var category = dbContext.Categories.FirstOrDefault(c => c.Id == id);
+        var category = dbContext.Categories.Include(c => c.Products).FirstOrDefault(c => c.Id == id);
 
         if (category == null)
         {
@@ -63,7 +62,18 @@ public class CategoriesController : ControllerBase
             Id = category.Id,
             Name = category.Name,
             Image = category.Image,
-            Slug = category.Slug
+            Slug = category.Slug,
+            Products = category.Products.Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                Photo = p.Photo,
+                Label = p.Label,
+                SKU = p.SKU,
+                Kategori = p.Kategori,
+                Price = p.Price
+            }).ToList()
         };
 
         return categoryDto;
