@@ -113,6 +113,7 @@ public class CategoriesController : ControllerBase
         return categoryDto;
     }
 
+    // POST  /api/categories
     [HttpPost]
     public ActionResult<CategoryDto> AddCategory([FromBody] CategoryDto createCategoryDto)
     {
@@ -168,4 +169,23 @@ public class CategoriesController : ControllerBase
 
         return slug;
     }
+
+    // DELETE  /api/categories/{id}
+    [HttpDelete("{id}")]
+    public ActionResult DeleteCategory(int id)
+    {
+        var category = dbContext.Categories.FirstOrDefault(c => c.Id == id);
+
+        if (category == null)
+        {
+            return NotFound($"Category with ID {id} was not found.");
+        }
+
+        dbContext.Categories.Remove(category);
+        dbContext.SaveChanges();
+
+        return NoContent(); // 204 - standardrespons 
+    }
+
+
 }
