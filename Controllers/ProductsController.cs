@@ -1,7 +1,8 @@
-﻿using Freaky_Fashion_Api.Data;
+﻿using Freaky_Fashion_Api.Contracts.Products;
+using Freaky_Fashion_Api.Data;
 using Freaky_Fashion_Api.Domain;
+using Freaky_Fashion_Api.Dtos.Categories;
 using Microsoft.AspNetCore.Mvc;
-using Freaky_Fashion_Api.Contracts.Products;
 
 namespace Freaky_Fashion_Api.Controllers;
 
@@ -47,44 +48,57 @@ public class ProductsController : ControllerBase
     }
 
     //GET  /api/products
+    //GET  /api/products?name={name}
     [HttpGet]
-
-    public IEnumerable<Product> GetProducts()
+    public IEnumerable<ProductDto> GetProducts([FromQuery] string? name)
     {
-        var products = dbContext.Products.ToList();
+        var query = dbContext.Products.AsQueryable();
 
-        return products;
+        if (!string.IsNullOrEmpty(name))
+        {
+            query = query.Where(p => p.Name.Contains(name));
+        }
+
+        var productDtos = query.Select(product => new ProductDto
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Description = product.Description,
+            Photo = product.Photo,
+            Label = product.Label,
+            SKU = product.SKU,
+            Price = product.Price,
+            Kategori = product.Kategori
+        }).ToList();
+
+        return productDtos;
     }
 
     //GET  /api/products/{id}   //gets one unique product
     [HttpGet("{id}")]
 
-    public ActionResult<Product> GetProduct(int id)
+    public ActionResult<ProductDto> GetProduct(int id)
     {
-        var products = dbContext.Products;
-        var product = products.FirstOrDefault(x => x.Id == id);
+        var product = dbContext.Products.FirstOrDefault(x => x.Id == id);
 
         if (product == null)
         {
             return NotFound();
         }
 
-        return product;
-    }
-
-    //GET  /api/products/search?name={name}   //get a list of products with the same name
-    [HttpGet("search")]
-    public ActionResult<List<Product>> GetProductByName([FromQuery] string name)
-    {
-        var products = dbContext.Products;
-        var productsByName = products.Where(x => x.Name == name).ToList();
-
-        if (productsByName.Count == 0)
+        var productDto = new ProductDto
         {
-            return new List<Product>();
-        }
+            Id = product.Id,
+            Name = product.Name,
+            Description = product.Description,
+            Photo = product.Photo,
+            Label = product.Label,
+            SKU = product.SKU,
+            Price = product.Price,
+            Kategori = product.Kategori
+        };
 
-        return productsByName;
+        return Ok(productDto);
     }
 
     //POST  /api/products
